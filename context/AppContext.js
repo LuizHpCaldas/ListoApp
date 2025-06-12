@@ -22,6 +22,19 @@ export const AppProvider = ({ children }) => {
 
   const remaining = budget - totalSpent;
 
+  // Listas completas e média de gastos
+  const completedLists = lists.filter((list) => list.completedAt);
+  const avgSpentPerList =
+    completedLists.length > 0
+      ? completedLists.reduce((total, list) => {
+          const listTotal = list.items.reduce(
+            (sum, item) => sum + (item.price || 0),
+            0
+          );
+          return total + listTotal;
+        }, 0) / completedLists.length
+      : 0;
+
   // Métodos para manipular o estado
   const createList = (newListName) => {
     if (newListName.trim()) {
@@ -66,7 +79,65 @@ export const AppProvider = ({ children }) => {
     );
   };
 
-  // Outros métodos (addToCart, removeFromCart, etc.) continuam como no original
+  const addToCart = (itemId, price) => {
+    const currentTime = new Date().toISOString();
+    setLists(
+      lists.map((list) =>
+        list.id === activeList
+          ? {
+              ...list,
+              items: list.items.map((item) =>
+                item.id === itemId
+                  ? {
+                      ...item,
+                      price: parseFloat(price) || 0,
+                      inCart: true,
+                      purchasedAt: currentTime,
+                    }
+                  : item
+              ),
+            }
+          : list
+      )
+    );
+  };
+
+  const removeFromCart = (itemId) => {
+    setLists(
+      lists.map((list) =>
+        list.id === activeList
+          ? {
+              ...list,
+              items: list.items.map((item) =>
+                item.id === itemId
+                  ? { ...item, price: null, inCart: false, purchasedAt: null }
+                  : item
+              ),
+            }
+          : list
+      )
+    );
+  };
+
+  const removeProduct = (itemId) => {
+    setLists(
+      lists.map((list) =>
+        list.id === activeList
+          ? { ...list, items: list.items.filter((item) => item.id !== itemId) }
+          : list
+      )
+    );
+  };
+
+  const completeList = (listId) => {
+    setLists(
+      lists.map((list) =>
+        list.id === listId
+          ? { ...list, completedAt: new Date().toISOString() }
+          : list
+      )
+    );
+  };
 
   return (
     <AppContext.Provider
@@ -81,10 +152,15 @@ export const AppProvider = ({ children }) => {
         setMode,
         totalSpent,
         remaining,
+        completedLists,
+        avgSpentPerList,
         createList,
         deleteList,
         addProduct,
-        // Adicione todos os outros métodos necessários
+        addToCart,
+        removeFromCart,
+        removeProduct,
+        completeList,
       }}
     >
       {children}

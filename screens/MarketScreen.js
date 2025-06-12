@@ -69,8 +69,15 @@ const MarketScreen = ({ navigation }) => {
               <ProductItem
                 item={item}
                 mode="market"
-                onAddToCart={addToCart}
-                onRemoveFromCart={removeFromCart}
+                onAddToCart={(itemId, price) => {
+                  addToCart(itemId, price);
+                }}
+                onRemoveFromCart={(itemId) => {
+                  removeFromCart(itemId);
+                }}
+                onRemoveProduct={(itemId) => {
+                  removeProduct(itemId);
+                }}
               />
             )}
             style={styles.productsList}
